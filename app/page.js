@@ -24,6 +24,11 @@ export default function Component() {
   const [dailyChangePercent, setDailyChangePercent] = useState(0);
   const [highestPrice, setHighestPrice] = useState(0);
   const [lowestPrice, setLowestPrice] = useState(0);
+  const [summary, setSummary] = useState("");
+  const [marketCap, setMarketCap] = useState("");
+  const [peRatio, setPeRatio] = useState("");
+  const [dividendYield, setDividendYield] = useState("");
+  const [beta, setBeta] = useState("");
   const [error, setError] = useState(null);
 
   useEffect(() => {
@@ -34,9 +39,9 @@ export default function Component() {
       console.log('Received data:', data);
 
       // Ensure the data structure is correctly parsed
-      const history = Object.keys(data['Close']).map(date => ({
+      const history = Object.keys(data.history['Close']).map(date => ({
         date: date,
-        price: data['Close'][date]
+        price: data.history['Close'][date]
       }));
 
       setStockData(history);
@@ -48,6 +53,11 @@ export default function Component() {
       setDailyChangePercent((change / firstPrice) * 100);
       setHighestPrice(Math.max(...history.map(item => item.price)));
       setLowestPrice(Math.min(...history.map(item => item.price)));
+      setSummary(data.summary);
+      setMarketCap(data.market_cap);
+      setPeRatio(data.pe_ratio);
+      setDividendYield(data.dividend_yield);
+      setBeta(data.beta);
       setLoading(false);
     }).catch(error => {
       console.error('Error fetching stock data:', error);
@@ -135,28 +145,28 @@ export default function Component() {
               <div className="grid gap-4">
                 <div>
                   <h3 className="text-lg font-bold">About {symbol}</h3>
-                  <p className="text-gray-500">
-                    Apple Inc. is an American multinational technology company that designs, develops, and sells consumer electronics, computer software, and online services.
-                  </p>
+                  <div className="text-gray-500 overflow-y-auto max-h-40 pr-4">
+                    {summary}
+                  </div>
                 </div>
                 <div>
                   <h3 className="text-lg font-bold">Key Information</h3>
                   <div className="grid gap-2 text-gray-500">
                     <div className="flex items-center justify-between">
                       <span>Market Cap:</span>
-                      <span>$2.5 Trillion</span>
+                      <span>{marketCap}</span>
                     </div>
                     <div className="flex items-center justify-between">
                       <span>P/E Ratio:</span>
-                      <span>27.5</span>
+                      <span>{peRatio}</span>
                     </div>
                     <div className="flex items-center justify-between">
                       <span>Dividend Yield:</span>
-                      <span>0.6%</span>
+                      <span>{dividendYield}</span>
                     </div>
                     <div className="flex items-center justify-between">
                       <span>Beta:</span>
-                      <span>1.3</span>
+                      <span>{beta}</span>
                     </div>
                   </div>
                 </div>
