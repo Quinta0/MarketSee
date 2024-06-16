@@ -4,14 +4,14 @@ from flask_cors import CORS
 import logging
 
 app = Flask(__name__)
-CORS(app)  # Enable CORS for all routes
+CORS(app)
 
 # Enable logging
 logging.basicConfig(level=logging.DEBUG)
 
 @app.route('/stock/<symbol>', methods=['GET'])
 def get_stock(symbol):
-    period = '1mo'  # Default to 1 month if no timeframe is specified
+    period = '1mo'
 
     stock = yf.Ticker(symbol)
     data = stock.history(period=period)
@@ -38,7 +38,7 @@ def get_stock(symbol):
         'beta': stock_info['beta']
     }
 
-    logging.debug(json_data)  # Log the returned data structure
+    logging.debug(json_data)
     return jsonify(json_data)
 
 if __name__ == '__main__':
