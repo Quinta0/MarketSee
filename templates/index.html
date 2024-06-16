@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Stock Data</title>
+    <script src="https://unpkg.com/htmx.org@1.7.0"></script>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+</head>
+<body>
+    <div id="stock-container" class="p-6 md:p-8">
+        <input type="text" id="stock-symbol" placeholder="Enter stock symbol (e.g., AAPL)">
+        <button hx-get="/get_stock_data" hx-target="#stock-data" hx-include="#stock-symbol" hx-trigger="click">Get Stock Data</button>
+        <div id="stock-data">
+            <!-- Stock data will be injected here -->
+            <svg xmlns="http://www.w3.org/2000/svg" width="968" height="544.5" role="application">
+                <rect width="968" height="544.5" fill="transparent"></rect>
+                <g transform="translate(40,10)">
+                    <g class="grid-lines">
+                        <!-- Grid lines will be dynamically generated -->
+                    </g>
+                    <g class="labels">
+                        <!-- Labels will be dynamically generated -->
+                    </g>
+                    <g class="data-lines">
+                        <!-- Data lines will be dynamically generated -->
+                    </g>
+                    <g class="data-points">
+                        <!-- Data points will be dynamically generated -->
+                    </g>
+                </g>
+            </svg>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('htmx:beforeSwap', function (event) {
+            if (event.detail.target.id === 'stock-data') {
+                const data = JSON.parse(event.detail.xhr.responseText);
+                const svg = document.querySelector('#stock-data svg');
+
+                const width = 918;
+                const height = 494.5;
+                const margin = { top: 10, right: 40, bottom: 50, left: 40 };
+                const innerWidth = width - margin.left - margin.right;
+                const innerHeight = height - margin.top - margin.bottom;
+
+                const max = Math.max(...data.close);
+                const min = Math.min(...data.close);
+
+                const xScale = (i) => (i / (data.dates.length - 1)) * innerWidth;
+                const yScale = (value) => ((max - value) / (max - min)) * innerHeight;
+
+                // Clear previous elements
+                svg.querySelector('.data-lines').innerHTML = '';
+                svg.querySelector('.data-points').innerHTML = '';
+
+                // Create path for stock data
+                const pathData = data.close.map((value, index) => {
+                    const x = xScale(index);
+                    const y = yScale(value);
+                    return `${index === 0 ? 'M' : 'L'}${x},${y}`;
+                }).join(' ');
+
+                const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+                path.setAttribute('d', pathData);
+                path.setAttribute('fill', 'none');
+                path.setAttribute('stroke-width', '2');
+                path.setAttribute('stroke', '#e11d48');
+                svg.querySelector('.data-lines').appendChild(path);
+
+                // Create circles for data points
+                data.close.forEach((value, index) => {
+                    const x = xScale(index);
+                    const y = yScale(value);
+                    const circle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+                    circle.setAttribute('cx', x);
+                    circle.setAttribute('cy', y);
+                    circle.setAttribute('r', 3);
+                    circle.setAttribute('fill', '#e11d48');
+                    svg.querySelector('.data-points').appendChild(circle);
+                });
+            }
+        });
+    </script>
+</body>
+</html>
